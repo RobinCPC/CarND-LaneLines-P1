@@ -53,7 +53,7 @@ def region_of_interest(img, vertices):
     return masked_image
 
 
-def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
+def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     """
     NOTE: this is the function you might want to use as a starting point once you want to
     average/extrapolate the line segments you detect to map out the full
@@ -70,9 +70,70 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
     If you want to make the lines semi-transparent, think about combining
     this function with the weighted_img() function below
     """
+    #print('number of line: ', len(lines))
+    left_para = []  # record (m, b)
+    right_para = [] # same as left
+    y_para = []     # record (y1, y2)
+    # filter to get left and right lane parameter
     for line in lines:
-        for x1,y1,x2,y2 in line:
-            cv2.line(img, (x1, y1), (x2, y2), color, thickness)
+        x1, y1, x2, y2 = line.flatten()
+        #for x1,y1,x2,y2 in line:
+        m = (y2-y1)/(x2-x1)  # find the slope of line
+        b = y1 - m*x1
+        m_abs = abs(m)
+        if m >= 0.5 and m <= 0.87 and abs(b) <= 70:          # right lane
+            #cv2.line(img, (x1, y1), (x2, y2), color, thickness)
+            right_para.append([m, b])
+            y_para.append([y1, y2])
+        elif m <= -0.5 and m >= -0.87 and abs(b-650) <= 100: # left lane
+            #cv2.line(img, (x1, y1), (x2, y2), [0, 255, 0], thickness)
+            left_para.append([m, b])
+            y_para.append([y1, y2])
+        else:
+            #print('x1, y1, x2, y2', x1,y1,x2,y2)
+            #print('slope, offset: ', m, b)
+            #print("Posssible not a lane line")
+            #cv2.line(img, (x1, y1), (x2, y2), [0, 0, 255], thickness)
+            continue
+    # initial parameters for slope, offset, ymax, ymin
+    (ymax, xmax, _) = img.shape
+    ymin = ymax//2
+    left_m, left_b = -0.65, (650/960)*xmax
+    right_m, right_b = 0.65, 25
+
+    # compute average slope and offset
+    if len(left_para):
+        left_m, left_b = np.mean(left_para, axis=0).flatten()
+    else:
+        pass
+        #print("no left_para in this frame!")
+
+    if len(right_para):
+        right_m, right_b = np.mean(right_para, axis=0).flatten()
+    else:
+        pass
+        #print("no right_para in this frame!")
+    # get maximum and minimum of y value
+    if len(y_para):
+        y1max, y2max = np.amax(y_para, axis=0).flatten()
+        y1min, y2min = np.amin(y_para, axis=0).flatten()
+        ymax = int(max(y1max, y2max))
+        ymin = int(min(y1min, y2min))
+    else:
+        pass
+        #print("no lane detect!")
+
+    # use extrapolation to get expected x value and plot lane lines
+    xmax = int((ymax - left_b)/left_m)
+    xmin = int((ymin - left_b)/left_m)
+    #print(type(xmax), type(xmin))
+    #print(type(ymax), type(ymin))
+    cv2.line(img, (xmin, ymin), (xmax, ymax), [0, 255, 0], thickness)
+
+    xmax = int((ymax - right_b)/right_m)
+    xmin = int((ymin - right_b)/right_m)
+    cv2.line(img, (xmin, ymin), (xmax, ymax), color, thickness)
+
 
 def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     """
