@@ -86,42 +86,43 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
             right_para.append([m, b])
             y_para.append([y1, y2])
         elif m <= -0.5 and m >= -0.87 and abs(b-650) <= 100: # left lane
-            #cv2.line(img, (x1, y1), (x2, y2), [0, 255, 0], thickness)
+            #cv2.line(img, (x1, y1), (x2, y2), [0, 255, 0], 3)
             left_para.append([m, b])
             y_para.append([y1, y2])
         else:
             #print('x1, y1, x2, y2', x1,y1,x2,y2)
             #print('slope, offset: ', m, b)
             #print("Posssible not a lane line")
-            #cv2.line(img, (x1, y1), (x2, y2), [0, 0, 255], thickness)
+            cv2.line(img, (x1, y1), (x2, y2), [0, 0, 255], thickness)
             continue
     # initial parameters for slope, offset, ymax, ymin
     (ymax, xmax, _) = img.shape
-    ymin = ymax//2
+    ymin = int((330/540)*ymax)
     left_m, left_b = -0.65, (650/960)*xmax
-    right_m, right_b = 0.65, 25
+    right_m, right_b = 0.65, (25/960)*xmax
 
     # compute average slope and offset
     if len(left_para):
         left_m, left_b = np.mean(left_para, axis=0).flatten()
     else:
+        print("no left_para in this frame!")
         pass
-        #print("no left_para in this frame!")
 
     if len(right_para):
         right_m, right_b = np.mean(right_para, axis=0).flatten()
     else:
+        print("no right_para in this frame!")
         pass
-        #print("no right_para in this frame!")
+
     # get maximum and minimum of y value
     if len(y_para):
         y1max, y2max = np.amax(y_para, axis=0).flatten()
         y1min, y2min = np.amin(y_para, axis=0).flatten()
-        ymax = int(max(y1max, y2max))
-        ymin = int(min(y1min, y2min))
+        #ymax = int(max(y1max, y2max))
+        #ymin = int(min(y1min, y2min))
     else:
+        print("no lane detect!")
         pass
-        #print("no lane detect!")
 
     # use extrapolation to get expected x value and plot lane lines
     xmax = int((ymax - left_b)/left_m)
@@ -193,7 +194,10 @@ def process_image(image):
 
     # Find the region of interest (ROI)
     imshape = gray.shape
-    vertices = np.array([[(0, imshape[0]), (450, 330), (490, 330), (imshape[1], imshape[0])]], dtype=np.int32)
+    left_vx = int((450/960)*imshape[1])
+    right_vx = int((489/960)*imshape[1])
+    vy = int((318/540)*imshape[0])
+    vertices = np.array([[( int(0.1*imshape[1]), imshape[0]), (left_vx, vy), (right_vx, vy), (imshape[1], imshape[0])]], dtype=np.int32)
     mask_edges = region_of_interest(edges, vertices)
     #plt.imshow(mask_edges)
     #plt.show()
@@ -201,8 +205,8 @@ def process_image(image):
     # Use Hough Line to find the straight line
     rho = 2  # distance resolution in pixels of the Hough grid
     theta = np.pi/180   # angular resolutions in radians of the Hough grid
-    threshold = 10      # minimum number of votes
-    min_line_length = 35
+    threshold = 5      # minimum number of votes
+    min_line_length = 25
     max_line_gap = 10
     line_image = hough_lines(mask_edges, rho, theta, threshold, min_line_length, max_line_gap)
     #plt.imshow(line_image)
