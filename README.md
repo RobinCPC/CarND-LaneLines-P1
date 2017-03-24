@@ -1,4 +1,15 @@
-#**Finding Lane Lines on the Road** 
+# For project review:
+
+* To view the P1.ipynb online, please click [nbviewer](https://nbviewer.jupyter.org/github/RobinCPC/CarND-LaneLines-P1/blob/master/P1.ipynb)
+* Or clone the repo and open P1.html with your brower
+* To view writeup, please click [here](./writeup.md)
+
+
+The following is the original README:
+
+---
+
+# **Finding Lane Lines on the Road** 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
 <img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
