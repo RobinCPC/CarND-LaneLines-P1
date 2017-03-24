@@ -23,15 +23,20 @@
 
 ### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
-My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I used Gaussian blur to 
-smooth the noise signal in each frame. 
+My pipeline consisted of 5 steps. First, I converted the images to grayscale, then I used Gaussian blur to smooth the noise signal in each frame.
+ 
 ![alt text][image3]
+
 Next, I used Canny Edge to detect all possible edges in the image.
+
 ![alt text][image4]
-The forth step is to use a polygon mask to the region of interesting (ROI), in where the lane lines should
+
+The forth step is to use a polygon mask to the region of interesting (ROI), in where the lane lines should be found.
+
 ![alt text][image5]
-be found. The fifth (final) step is to use Hough Line to collect lines that is possbile to be lane lines.
-In addition, inside the function of Hough Line, I also use draw_line to lines on the weighted_img.
+
+The fifth (final) step is to use Hough Line to collect lines that is possbile to be lane lines. In addition, inside the function of Hough Line, I also use draw_line to lines on the weighted_img.
+
 ![alt text][image6]
 
 In order to draw a single line on the left and right lanes, I modified the draw_lines() function by following steps:
